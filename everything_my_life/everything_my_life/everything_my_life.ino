@@ -16,12 +16,14 @@ static int wingRange = 90; //Range of motion, degrees, at full power
 static int rudderCenter = 90; //Center of the servos' motion
 static int rudderRange = 90; //Rudder range of motion, degrees
 static int turnTime = 3000; //How long a turn takes, in milliseconds
-const float pi = 3.14 //declaring pi
+const float pi = 3.14; //declaring pi
+int lightState = 1;
 
 static int sensorThreshhold = 75; //When to turn, in mm
 
 static int leftSensorPin = A0, rightSensorPin = A1; //Analog pins to read sensors
 static int leftWingPin = 9, rightWingPin = 10, rudderPin = 11; //PWM-capable pins for servos
+static int blinkyLight = 8;
 
 SharpIR leftSensor(leftSensorPin, 20150); //Set up IR sensor objects (20150 is a magic number for this sensor model)
 SharpIR rightSensor(leftSensorPin, 20150);
@@ -36,15 +38,24 @@ long unsigned int lastTime = 0; //Time the last iteration ended
 
 
 void setup() {
+
+  
   
   leftWing.attach(leftWingPin); //Attach servo objects to physical pins
   rightWing.attach(rightWingPin);
   rudder.attach(rudderPin);  
 
+  pinMode(blinkyLight, OUTPUT);
+
 }
 
 void loop() {
+
+  blink(lightState%2);
+  lightState += 1;
+  
   /*________sense________*/
+  
   // If turn from last loop isn't finish, this will ensure that it finishes.
   if (turnTimer){
     turnTimer -= lastTime; 
@@ -59,21 +70,23 @@ void loop() {
   right_dist = rightSensor.distance()* 10;
 
 
+
   /*________think________*/
 
   // This determines our boat's direction by assigning it a switch case based on sensor output
-  if (left_dist < sensorThreshhold){
-    turnDir = 1;  //Are we too close to a wall?
+  if ((right_dist < sensorThreshold) && (left_dist < sensorThreshold)){
+    turnDir = 2;
+    turnTimer = 500;  // Is this needed?   
+  }
+  else if (left_dist < sensorThreshhold){
+    turnDir = 1;  //if left sensor triggered, turn right
     turnTimer = 500;  //Sets us to have a 5 sec turn
   }
-  if (right_dist < sensorThreshhold){
-    turnDir = -1; //If both triggered, turn left
+  else if (right_dist < sensorThreshhold){
+    turnDir = -1; //if right sensor triggered, turn left
     turnTimer = 500;
   }
-  if ((right_dist < sensorThreshold) && (left_dist < sensorThreshold)){
-    turnDir = 2
-    turnDir = 500;  // Is this needed?   
-  }
+  
   
    //IS THIS LEGIT???
   // phase = sin(timer / wingPeriod * 2*PI) / 2 * wingRange; //Current wing position, in degrees, assuming full power
@@ -81,7 +94,9 @@ void loop() {
    rudder_phase = rudderRange*sin(wingPeriod);  //Does this make sense?
 
 
+
   /*_________act_________*/
+  
     switch (turnDir) {
     //In case 0 the boat will go straight because the sensor did not sense a wall within range.
     case 0:
@@ -90,14 +105,14 @@ void loop() {
       rudder.write(rudderCenter);
       break;
     
-    //In case -1 the boat will turn to the because the left IR sensed a wall within range. 
+    //In case -1 the boat will turn to the left because the right IR sensed a wall within range. 
     case -1:
       leftWing.write(wingCenter + triangleWaveFunction(timer));
       rightWing.write(wingCenter);
       rudder.write(rudderCenter - rudderRange);
       break;
       
-    //In case 1 the boat will turn to the because the right IR sensed a wall within range.
+    //In case 1 the boat will turn to the right because the right IR sensed a wall within range.
     case 1:
       leftWing.write(wingCenter);
       rightWing.write(wingCenter + triangleWaveFunction(timer));
@@ -112,16 +127,24 @@ void loop() {
       break;
     }
       
-  //
+  //updating timers
   timer += millis() - lastTime;
   timer = timer % wingPeriod; //Prevent overflows
   lastTime = millis(); //So we'll know how long the next loop takes
 
 }
 
+
 // This is a function to be used for the wing servos. It is a trunkated triangle wave function. 
 // This will make the servos move at a constant rate and uses a fourier transform to imitate a trunkated triangle wave.
 int triangleWaveFunction(int x){
-  return 8*(pi^2)*(sin(x)−(1/9*sin(3*x))+(1/25*sin(5*x))−(1/49*sin(7*x)))
+  return 8*(pi^2)*(sin(x)−(1/9*sin(3*x))+(1/25*sin(5*x))−(1/49*sin(7*x)));
+}
+
+def blink(state){
+  if(state == 1)
+    digitalWrite(blinkyLight, HIGH);
+  if(state == )
+    digitalWrite(blinkyLight, LOW);
 }
 
