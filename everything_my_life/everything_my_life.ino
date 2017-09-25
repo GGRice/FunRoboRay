@@ -22,11 +22,15 @@ const int sensorThreshhold = 75; //When to turn, in mm
 
 const int leftSensorPin = A0, rightSensorPin = A1; //Analog pins to read sensors
 const int leftWingPin = 9, rightWingPin = 10, rudderPin = 11; //PWM-capable pins for servos
+const int led = 13; //Output pin to blinking LED
+
 
 SharpIR leftSensor(leftSensorPin, 20150); //Set up IR sensor objects (20150 is a magic number for this sensor model)
 SharpIR rightSensor(leftSensorPin, 20150);
 
 Servo leftWing, rightWing, rudder; //Servo objects for wings and rudder
+
+pinMode(led, OUTPUT); //Set up LED pin
 
 int turnDir = 0; //0 for straight, -1 for left, 1 for right, 2 for backwards
 int turnTimer = 0; //Milliseconds left in the turn
@@ -113,10 +117,18 @@ void loop() {
     }
       
   //
+ 
   timer += millis() - lastTime;
   timer = timer % wingPeriod; //Prevent overflows
   lastTime = millis(); //So we'll know how long the next loop takes
-
+ 
+ //Blink LED while main loop is running
+  if (timer < wingPeriod/2){
+    digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+  }
+  else {
+    digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
+  }
 }
 
 // This is a function to be used for the wing servos. It is a trunkated triangle wave function. 
