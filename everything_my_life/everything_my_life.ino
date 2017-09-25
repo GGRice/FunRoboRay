@@ -10,18 +10,18 @@
 #include <Servo.h>
 #include <SharpIR.h>
 
-static int wingPeriod = 2000; //Period of wing movement, in milliseconds
-static int wingCenter = 90; //Center of the servos' motion
-static int wingRange = 90; //Range of motion, degrees, at full power
-static int rudderCenter = 90; //Center of the servos' motion
-static int rudderRange = 90; //Rudder range of motion, degrees
-static int turnTime = 3000; //How long a turn takes, in milliseconds
-const float pi = 3.14 //declaring pi
+const int wingPeriod = 2000; //Period of wing movement, in milliseconds
+const int wingCenter = 90; //Center of the servos' motion
+const int wingRange = 90; //Range of motion, degrees, at full power
+const int rudderCenter = 90; //Center of the servos' motion
+const int rudderRange = 90; //Rudder range of motion, degrees
+const int turnTime = 3000; //How long a turn takes, in milliseconds
+//const float pi = 3.14 //declaring pi
 
-static int sensorThreshhold = 75; //When to turn, in mm
+const int sensorThreshhold = 75; //When to turn, in mm
 
-static int leftSensorPin = A0, rightSensorPin = A1; //Analog pins to read sensors
-static int leftWingPin = 9, rightWingPin = 10, rudderPin = 11; //PWM-capable pins for servos
+const int leftSensorPin = A0, rightSensorPin = A1; //Analog pins to read sensors
+const int leftWingPin = 9, rightWingPin = 10, rudderPin = 11; //PWM-capable pins for servos
 
 SharpIR leftSensor(leftSensorPin, 20150); //Set up IR sensor objects (20150 is a magic number for this sensor model)
 SharpIR rightSensor(leftSensorPin, 20150);
@@ -78,7 +78,7 @@ void loop() {
    //IS THIS LEGIT???
   // phase = sin(timer / wingPeriod * 2*PI) / 2 * wingRange; //Current wing position, in degrees, assuming full power
    //phase = 8*(pi^2)*(sin(x)−(1/9*sin(3*x))+(1/25*sin(5*x))−(1/49*sin(7*x)));
-   rudder_phase = rudderRange*sin(wingPeriod);  //Does this make sense?
+  int rudder_phase = rudderCenter + triangleWaveFunction(timer)*rudderRange/wingRange;
 
 
   /*_________act_________*/
@@ -121,7 +121,8 @@ void loop() {
 
 // This is a function to be used for the wing servos. It is a trunkated triangle wave function. 
 // This will make the servos move at a constant rate and uses a fourier transform to imitate a trunkated triangle wave.
-int triangleWaveFunction(int x){
-  return 8*(pi^2)*(sin(x)−(1/9*sin(3*x))+(1/25*sin(5*x))−(1/49*sin(7*x)))
+int triangleWaveFunction(int phase){
+  float x = phase * 2*PI / wingPeriod;
+  return wingRange/2 * 8*(PI*PI)*(sin(x)-(1/9*sin(3*x))+(1/25*sin(5*x))-(1/49*sin(7*x))) / 100;
 }
 
