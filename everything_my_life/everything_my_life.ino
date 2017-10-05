@@ -24,8 +24,8 @@ const int leftSensorPin = A0, rightSensorPin = A1; //Analog pins to read sensors
 const int leftWingPin = 9, rightWingPin = 10, rudderPin = 11; //PWM-capable pins for servos
 const int led = 13; //Output pin to blinking LED
 
-SharpIR leftSensor = SharpIR(leftSensorPin,20150); //Set up IR sensor objects (20150 is a magic number for this sensor model)
-SharpIR rightSensor = SharpIR(leftSensorPin,20150);
+SharpIR leftSensor(leftSensorPin,20150); //Set up IR sensor objects (20150 is a magic number for this sensor model)
+SharpIR rightSensor(leftSensorPin,20150);
 
 int left_dist = 0;
 int right_dist = 0;
