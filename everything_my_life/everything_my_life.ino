@@ -60,10 +60,8 @@ void loop() {
   }
 
   // Getting the distances from walls from both sensors (converts from mm to cm)
-  left_dist = leftSensor.getDistance();
-  right_dist = rightSensor.getDistance();
-  left_dist = left_dist*10;
-  right_dist = right_dist*10;
+  left_dist = leftSensor.getDistance()*10;
+  right_dist = rightSensor.getDistance()*10;
 
   /*________think________*/
 
