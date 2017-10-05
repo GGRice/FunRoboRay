@@ -91,30 +91,38 @@ void loop() {
     switch (turnDir) {
     //In case 0 the boat will go straight because the sensor did not sense a wall within range.
     case 0:
-      leftWing.write(wingCenter + triangleWaveFunction(timer));
+      {
+      leftWing.write(wingCenter - triangleWaveFunction(timer));
       rightWing.write(wingCenter + triangleWaveFunction(timer));
       rudder.write(rudderCenter);
+      }
       break;
     
     //In case -1 the boat will turn to the because the left IR sensed a wall within range. 
     case -1:
-      leftWing.write(wingCenter + triangleWaveFunction(timer));
+      {
+      leftWing.write(wingCenter - triangleWaveFunction(timer));
       rightWing.write(wingCenter);
       rudder.write(rudderCenter - rudderRange);
+      }
       break;
       
     //In case 1 the boat will turn to the because the right IR sensed a wall within range.
     case 1:
+      {
       leftWing.write(wingCenter);
       rightWing.write(wingCenter + triangleWaveFunction(timer));
       rudder.write(rudderCenter + rudderRange);
+      }
       break;
     
     //In case 2 the boat has sensed both walls as being dangerously close and is now using the rudder to reverse.
     case 2:
+      {
       leftWing.write(wingCenter);
       rightWing.write(wingCenter);
       rudder.write(rudder_phase);
+      }
       break;
     }
       
