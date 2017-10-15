@@ -24,13 +24,13 @@ const int leftSensorPin = A0, rightSensorPin = A1; //Analog pins to read sensors
 const int leftWingPin = 9, rightWingPin = 10, rudderPin = 11; //PWM-capable pins for servos
 const int led = 13; //Output pin to blinking LED
 
+SharpIR leftSensor(leftSensorPin,20150); //Set up IR sensor objects (20150 is a magic number for this sensor model)
+SharpIR rightSensor(leftSensorPin,20150);
 
-SharpIR leftSensor(leftSensorPin, 20150); //Set up IR sensor objects (20150 is a magic number for this sensor model)
-SharpIR rightSensor(leftSensorPin, 20150);
+int left_dist = 0;
+int right_dist = 0;
 
 Servo leftWing, rightWing, rudder; //Servo objects for wings and rudder
-
-pinMode(led, OUTPUT); //Set up LED pin
 
 int turnDir = 0; //0 for straight, -1 for left, 1 for right, 2 for backwards
 int turnTimer = 0; //Milliseconds left in the turn
@@ -44,6 +44,7 @@ void setup() {
   leftWing.attach(leftWingPin); //Attach servo objects to physical pins
   rightWing.attach(rightWingPin);
   rudder.attach(rudderPin);  
+  pinMode(led, OUTPUT); //Set up LED pin
 
 }
 
@@ -59,9 +60,8 @@ void loop() {
   }
 
   // Getting the distances from walls from both sensors (converts from mm to cm)
-  left_dist = leftSensor.distance() * 10;
-  right_dist = rightSensor.distance()* 10;
-
+  left_dist = leftSensor.getDistance()*10;
+  right_dist = rightSensor.getDistance()*10;
 
   /*________think________*/
 
@@ -74,9 +74,9 @@ void loop() {
     turnDir = -1; //If both triggered, turn left
     turnTimer = 500;
   }
-  if ((right_dist < sensorThreshold) && (left_dist < sensorThreshold)){
-    turnDir = 2
-    turnDir = 500;  // Is this needed?   
+  if ((right_dist < sensorThreshhold) && (left_dist < sensorThreshhold)){
+    turnDir = 2;
+    turnTimer = 500;  // Is this needed?   
   }
   
    //IS THIS LEGIT???
@@ -89,30 +89,38 @@ void loop() {
     switch (turnDir) {
     //In case 0 the boat will go straight because the sensor did not sense a wall within range.
     case 0:
-      leftWing.write(wingCenter + triangleWaveFunction(timer));
+      {
+      leftWing.write(wingCenter - triangleWaveFunction(timer));
       rightWing.write(wingCenter + triangleWaveFunction(timer));
       rudder.write(rudderCenter);
+      }
       break;
     
     //In case -1 the boat will turn to the because the left IR sensed a wall within range. 
     case -1:
-      leftWing.write(wingCenter + triangleWaveFunction(timer));
+      {
+      leftWing.write(wingCenter - triangleWaveFunction(timer));
       rightWing.write(wingCenter);
       rudder.write(rudderCenter - rudderRange);
+      }
       break;
       
     //In case 1 the boat will turn to the because the right IR sensed a wall within range.
     case 1:
+      {
       leftWing.write(wingCenter);
       rightWing.write(wingCenter + triangleWaveFunction(timer));
       rudder.write(rudderCenter + rudderRange);
+      }
       break;
     
     //In case 2 the boat has sensed both walls as being dangerously close and is now using the rudder to reverse.
     case 2:
+      {
       leftWing.write(wingCenter);
       rightWing.write(wingCenter);
       rudder.write(rudder_phase);
+      }
       break;
     }
       
@@ -137,4 +145,3 @@ int triangleWaveFunction(int phase){
   float x = phase * 2*PI / wingPeriod;
   return wingRange/2 * 8*(PI*PI)*(sin(x)-(1/9*sin(3*x))+(1/25*sin(5*x))-(1/49*sin(7*x))) / 100;
 }
-
